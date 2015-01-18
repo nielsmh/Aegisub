@@ -5,6 +5,7 @@
     BeforeTargets="ClCompile"
     Inputs="@(InstallHeader)"
     Outputs="@(InstallHeader->Replace($(HeaderRoot), $(AegisubSourceBase)include))"
+    Condition="'@(InstallHeader)' != ''"
     >
     <Copy
       SourceFiles="@(InstallHeader)"
@@ -17,6 +18,7 @@
     BeforeTargets="ClCompile"
     Inputs="@(InstallHeaderTo)"
     Outputs="@(InstallHeaderTo -> '$(AegisubSourceBase)include\%(Destination)%(Filename)%(Extension)')"
+    Condition="'@(InstallHeadersTo)' != ''"
     >
     <Copy
       SourceFiles="@(InstallHeaderTo)"

@@ -15,6 +15,7 @@
     <Yasm>
       <InputRelativeSourceDir></InputRelativeSourceDir>
       <Include></Include>
+      <ExcludeFromBuild>false</ExcludeFromBuild>
       <Config Condition="'$(Platform)'=='Win32'">-m x86</Config>
       <Config Condition="'$(Platform)'=='x64'">-m amd64</Config>
     </Yasm>
@@ -46,6 +47,8 @@
       <_Yasm Include="@(Yasm)" Condition="'%(Yasm.InputRelativeSourceDir)' == ''">
         <OutputDir></OutputDir>
       </_Yasm>
+      <!-- Remove items marked for exclusion (e.g. due to platform) -->
+      <_Yasm Remove="@(_Yasm->WithMetadataValue('ExcludeFromBuild','true'))" />
     </ItemGroup>
   </Target>
   

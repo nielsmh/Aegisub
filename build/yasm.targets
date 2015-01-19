@@ -1,0 +1,95 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <PropertyGroup>
+    <_PropertySheetDisplayName>Yasm compile targets</_PropertySheetDisplayName>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <BuildCompileTargets>
+      _YasmAssemble;
+      $(BuildCompileTargets)
+    </BuildCompileTargets>
+  </PropertyGroup>
+  <ItemDefinitionGroup>
+    <Yasm>
+      <InputRelativeSourceDir></InputRelativeSourceDir>
+      <Include></Include>
+      <Config Condition="'$(Platform)'=='Win32'">-m x86</Config>
+      <Config Condition="'$(Platform)'=='x64'">-m amd64</Config>
+    </Yasm>
+  </ItemDefinitionGroup>
+  
+  <Target
+    Name="_YasmAssemble"
+    DependsOnTargets="ComputeYasmOutputs;YasmCreateOutputDir;YasmAssemble"
+    Condition="'@(Yasm)' != ''"
+    />
+    
+  <!-- See standard-outdirs.props for explanation of the logic here -->
+  <Target
+    Name="ComputeYasmOutputs"
+    Inputs="@(Yasm)"
+    Outputs="%(InputRelativeSourceDir)|%(RelativeDir)"
+    >
+    <CalculateOutputDir
+      Items="@(Yasm)"
+      SourceDir="%(InputRelativeSourceDir)"
+      DestinationDir=".\"
+      Condition="'%(Yasm.InputRelativeSourceDir)' != ''"
+      >
+      <Output ItemName="_Yasm" TaskParameter="Outputs" />
+    </CalculateOutputDir>
+    <ItemGroup>
+      <!-- If the items don't have the InputRelativeSourceDir metadata, still
+        copy them to _Yasm and add an OutputDir metadata to them. -->
+      <_Yasm Include="@(Yasm)" Condition="'%(Yasm.InputRelativeSourceDir)' == ''">
+        <OutputDir></OutputDir>
+      </_Yasm>
+    </ItemGroup>
+  </Target>
+  
+  <Target
+    Name="YasmCreateOutputDir"
+    Inputs="@(_Yasm)"
+    Outputs="@(_Yasm->'%(OutputDir)')"
+    >
+    <MakeDir
+      Directories="@(_Yasm->'%(OutputDir)')"
+      />
+  </Target>
+  
+  <Target
+    Name="YasmAssemble"
+    Inputs="@(_Yasm)"
+    Outputs="%(_Yasm.OutputDir)%(_Yasm.Filename).obj"
+    >
+    <!--<Error
+      Condition="@(_Yasm->Count()) != 1"
+      Text="More than one file passed to Yasm will produce the same object file name. Ensure that appropriate InputRelativeSourceDir values are set."
+    Condition="@(_Yasm->Count()) &gt; 0"
+      />-->
+    <ItemGroup>
+      <_Yasm>
+        <Include>%(Include) -I%(RootDir)%(Directory)</Include>
+        <OutputDir Condition="'%(OutputDir)' == '.\'"></OutputDir>
+        <RelativeOutputDir>%(OutputDir)</RelativeOutputDir>
+        <OutputDir>$(AegisubObjectDir)%(OutputDir)</OutputDir>
+      </_Yasm>
+    </ItemGroup>
+    <Message
+      Importance="High"
+      Text="%(_Yasm.RelativeOutputDir)%(_Yasm.Filename)%(_Yasm.Extension)"
+      />
+    <Exec
+      Command="Yasm -f win32 %(_Yasm.Config) %(_Yasm.Include) -o &quot;%(_Yasm.OutputDir)%(_Yasm.Filename).obj&quot; &quot;%(_Yasm.FullPath)&quot;"
+      WorkingDirectory="%(_Yasm.OutputDir)"
+      />
+    <ItemGroup>
+      <Link   Include="%(_Yasm.OutputDir)%(_Yasm.Filename).obj" />
+      <Lib    Include="%(_Yasm.OutputDir)%(_Yasm.Filename).obj" />
+      <ImpLib Include="%(_Yasm.OutputDir)%(_Yasm.Filename).obj" />
+    </ItemGroup>
+  </Target>
+
+</Project>

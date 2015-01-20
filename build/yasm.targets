@@ -67,11 +67,6 @@
     Inputs="@(_Yasm)"
     Outputs="%(_Yasm.OutputDir)%(_Yasm.Filename).obj"
     >
-    <!--<Error
-      Condition="@(_Yasm->Count()) != 1"
-      Text="More than one file passed to Yasm will produce the same object file name. Ensure that appropriate InputRelativeSourceDir values are set."
-    Condition="@(_Yasm->Count()) &gt; 0"
-      />-->
     <ItemGroup>
       <_Yasm>
         <Include>%(Include) -I%(RootDir)%(Directory)</Include>

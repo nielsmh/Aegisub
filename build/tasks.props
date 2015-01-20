@@ -19,12 +19,10 @@
         char[] backslash = new char[] {'\\'};
         var srcdir = SourceDir.Replace('/', '\\').TrimEnd(backslash) + "\\";
         var dstdir = DestinationDir.Replace('/', '\\').TrimEnd(backslash) + "\\";
-        //Log.LogMessage("srcdir={0} dstdir={1}", srcdir, dstdir);
         int i = 0;
         foreach (var item in Items) {
           var itemDir = item.GetMetadata("RelativeDir"); // the dir specified in the item Include= attribute
           var outputDir = itemDir.Replace(srcdir, dstdir).Replace('/', '\\').TrimEnd(backslash) + "\\";
-          //Log.LogMessage("item={2} itemDir={0} outputDir={1}", itemDir, outputDir, item.ItemSpec);
           var output = new TaskItem(item);
           ((ITaskItem2)output).SetMetadataValueLiteral("OutputDir", outputDir);
           Outputs[i] = output;

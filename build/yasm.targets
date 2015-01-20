@@ -23,7 +23,7 @@
   
   <Target
     Name="_YasmAssemble"
-    DependsOnTargets="ComputeYasmOutputs;YasmCreateOutputDir;YasmAssemble"
+    DependsOnTargets="ComputeYasmOutputs;YasmAssemble"
     Condition="'@(Yasm)' != ''"
     />
     
@@ -51,9 +51,24 @@
       <_Yasm Remove="@(_Yasm->WithMetadataValue('ExcludeFromBuild','true'))" />
     </ItemGroup>
   </Target>
+  <Target
+    Name="ComputeYasmFinalOutputDir"
+    Inputs="@(_Yasm)"
+    Outputs="%(OutputDir)|%(RelativeDir)"
+    >
+    <ItemGroup>
+      <_Yasm>
+        <Include>%(Include) -I%(RootDir)%(Directory)</Include>
+        <OutputDir Condition="'%(OutputDir)' == '.\'"></OutputDir>
+        <RelativeOutputDir>%(OutputDir)</RelativeOutputDir>
+        <OutputDir>$(AegisubObjectDir)%(OutputDir)</OutputDir>
+      </_Yasm>
+    </ItemGroup>
+  </Target>
   
   <Target
     Name="YasmCreateOutputDir"
+    DependsOnTargets="ComputeYasmFinalOutputDir"
     Inputs="@(_Yasm)"
     Outputs="@(_Yasm->'%(OutputDir)')"
     >
@@ -64,17 +79,10 @@
   
   <Target
     Name="YasmAssemble"
+    DependsOnTargets="ComputeYasmFinalOutputDir;YasmCreateOutputDir"
     Inputs="@(_Yasm)"
     Outputs="%(_Yasm.OutputDir)%(_Yasm.Filename).obj"
     >
-    <ItemGroup>
-      <_Yasm>
-        <Include>%(Include) -I%(RootDir)%(Directory)</Include>
-        <OutputDir Condition="'%(OutputDir)' == '.\'"></OutputDir>
-        <RelativeOutputDir>%(OutputDir)</RelativeOutputDir>
-        <OutputDir>$(AegisubObjectDir)%(OutputDir)</OutputDir>
-      </_Yasm>
-    </ItemGroup>
     <Message
       Importance="High"
       Text="%(_Yasm.RelativeOutputDir)%(_Yasm.Filename)%(_Yasm.Extension)"
